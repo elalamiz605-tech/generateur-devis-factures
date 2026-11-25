@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Générateur de devis et factures</title>
+  <meta name="description" content="Créez des devis et factures professionnels en quelques secondes, directement dans votre navigateur.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar no-print">
+    <div class="brand">
+      <span class="logo-dot"></span>
+      <strong>Devis &amp; Factures</strong>
+    </div>
+    <div class="topbar-actions">
+      <button type="button" class="btn ghost" id="btn-new">Nouveau</button>
+      <button type="button" class="btn ghost" id="btn-history">Historique</button>
+      <button type="button" class="btn" id="btn-save">Enregistrer</button>
+      <button type="button" class="btn primary" id="btn-print">Imprimer / PDF</button>
+    </div>
+  </header>
+
+  <main class="layout">
+    <!-- Formulaire -->
+    <section class="panel no-print" aria-label="Édition">
+      <div class="segmented" role="tablist">
+        <button type="button" data-type="devis" class="active">Devis</button>
+        <button type="button" data-type="facture">Facture</button>
+      </div>
+
+      <details open>
+        <summary>Votre entreprise</summary>
+        <div class="grid">
+          <label>Nom / raison sociale<input data-bind="issuer.name" placeholder="Mon Studio Web"></label>
+          <label>E-mail<input data-bind="issuer.email" type="email" placeholder="contact@exemple.com"></label>
+          <label>Téléphone<input data-bind="issuer.phone" placeholder="+33 6 00 00 00 00"></label>
+          <label>N° SIRET / ICE / NIF<input data-bind="issuer.taxId" placeholder="123 456 789 00010"></label>
+          <label class="full">Adresse<textarea data-bind="issuer.address" rows="2" placeholder="12 rue Exemple&#10;75000 Paris"></textarea></label>
+          <label class="full">IBAN (facultatif)<input data-bind="issuer.iban" placeholder="FR76 ..."></label>
+          <label class="full file">Logo
+            <input type="file" id="logo-input" accept="image/*">
+            <button type="button" class="btn ghost small" id="logo-clear">Retirer le logo</button>
+          </label>
+        </div>
+        <p class="hint">Vos infos d'entreprise sont mémorisées dans ce navigateur.</p>
+      </details>
+
+      <details open>
+        <summary>Client</summary>
+        <div class="grid">
+          <label>Nom<input data-bind="client.name" placeholder="Client SARL"></label>
+          <label>E-mail<input data-bind="client.email" type="email"></label>
+          <label class="full">Adresse<textarea data-bind="client.address" rows="2"></textarea></label>
+        </div>
+      </details>
+
+      <details open>
+        <summary>Document</summary>
+        <div class="grid">
+          <label>Numéro<input data-bind="number"></label>
+          <label>Devise
+            <select data-bind="currency">
+              <option value="EUR">Euro (€)</option>
+              <option value="MAD">Dirham (MAD)</option>
+              <option value="USD">Dollar (USD)</option>
+              <option value="CHF">Franc suisse (CHF)</option>
+              <option value="XOF">Franc CFA (XOF)</option>
+            </select>
+          </label>
+          <label>Date<input data-bind="date" type="date"></label>
+          <label><span id="due-label">Valable jusqu'au</span><input data-bind="dueDate" type="date"></label>
+          <label>Remise globale (%)<input data-bind="discount" type="number" min="0" max="100" step="0.01"></label>
+          <label>Acompte versé<input data-bind="deposit" type="number" min="0" step="0.01"></label>
+        </div>
+      </details>
+
+      <details open>
+        <summary>Prestations</summary>
+        <div id="lines"></div>
+        <button type="button" class="btn ghost" id="btn-add-line">+ Ajouter une ligne</button>
+      </details>
+
+      <details open>
+        <summary>Notes &amp; conditions</summary>
+        <label class="full"><textarea data-bind="notes" rows="4"></textarea></label>
+      </details>
+
+      <div class="io">
+        <button type="button" class="btn ghost small" id="btn-export">Exporter (JSON)</button>
+        <label class="btn ghost small">Importer (JSON)<input type="file" id="import-input" accept="application/json" hidden></label>
+      </div>
+    </section>
+
+    <!-- Aperçu -->
+    <section class="preview-wrap" aria-label="Aperçu">
+      <article class="paper" id="paper"></article>
+    </section>
+  </main>
+
+  <!-- Historique -->
+  <dialog id="history">
+    <div class="dialog-head">
+      <h2>Historique</h2>
+      <button type="button" class="btn ghost small" id="history-close" aria-label="Fermer">✕</button>
+    </div>
+    <div id="history-list"></div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
