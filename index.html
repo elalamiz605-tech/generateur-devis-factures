@@ -3,109 +3,305 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Générateur de devis et factures</title>
-  <meta name="description" content="Créez des devis et factures professionnels en quelques secondes, directement dans votre navigateur.">
+  <title>Devis &amp; Factures</title>
+  <meta name="description" content="Créez des devis et factures professionnels, suivez vos paiements et gérez vos clients, directement dans votre navigateur.">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232f5bea'/%3E%3Cpath d='M10 8h8l5 5v11a1 1 0 0 1-1 1H10a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z' fill='%23fff'/%3E%3Cpath d='M12 16h8M12 19.5h8M12 23h5' stroke='%232f5bea' stroke-width='1.6' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <header class="topbar no-print">
     <div class="brand">
-      <span class="logo-dot"></span>
+      <span class="brand-mark" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><rect width="32" height="32" rx="7"/><path d="M10 8h8l5 5v11a1 1 0 0 1-1 1H10a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" fill="#fff"/><path d="M12 16h8M12 19.5h8M12 23h5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </span>
       <strong>Devis &amp; Factures</strong>
     </div>
-    <div class="topbar-actions">
+    <nav class="tabs" aria-label="Navigation">
+      <button type="button" data-view="editor" class="active">Éditeur</button>
+      <button type="button" data-view="dashboard">Tableau de bord</button>
+      <button type="button" data-view="clients">Clients</button>
+      <button type="button" data-view="catalog">Catalogue</button>
+    </nav>
+    <div class="topbar-actions" data-for="editor">
+      <span class="save-state" id="save-state"></span>
       <button type="button" class="btn ghost" id="btn-new">Nouveau</button>
-      <button type="button" class="btn ghost" id="btn-history">Historique</button>
       <button type="button" class="btn" id="btn-save">Enregistrer</button>
       <button type="button" class="btn primary" id="btn-print">Imprimer / PDF</button>
     </div>
   </header>
 
-  <main class="layout">
-    <!-- Formulaire -->
-    <section class="panel no-print" aria-label="Édition">
-      <div class="segmented" role="tablist">
-        <button type="button" data-type="devis" class="active">Devis</button>
-        <button type="button" data-type="facture">Facture</button>
+  <main>
+    <!-- ================= ÉDITEUR ================= -->
+    <section class="view layout" id="view-editor">
+      <div class="panel no-print">
+        <div class="segmented" role="group" aria-label="Type de document">
+          <button type="button" data-type="devis" class="active">Devis</button>
+          <button type="button" data-type="facture">Facture</button>
+        </div>
+
+        <div class="status-row">
+          <label>Statut<select id="status-select" data-bind="status"></select></label>
+        </div>
+
+        <details id="issuer-details">
+          <summary>Votre entreprise</summary>
+          <div class="grid">
+            <label class="full">Nom / raison sociale<input data-bind="issuer.name" placeholder="Mon Studio Web" autocomplete="organization"></label>
+            <label>E-mail<input data-bind="issuer.email" type="email" placeholder="contact@exemple.com"></label>
+            <label>Téléphone<input data-bind="issuer.phone" placeholder="+33 6 00 00 00 00"></label>
+            <label class="full">Adresse<textarea data-bind="issuer.address" rows="2" placeholder="12 rue Exemple&#10;75000 Paris"></textarea></label>
+            <label>Site web<input data-bind="issuer.website" placeholder="www.monstudio.fr"></label>
+            <label>SIRET / ICE / NIF<input data-bind="issuer.taxId" placeholder="123 456 789 00010"></label>
+            <label>N° TVA intracom.<input data-bind="issuer.vatNumber" placeholder="FR 12 345678901"></label>
+            <label>BIC<input data-bind="issuer.bic" placeholder="BNPAFRPP"></label>
+            <label class="full">IBAN<input data-bind="issuer.iban" placeholder="FR76 ..."></label>
+            <label class="full">Mentions de pied de page<input data-bind="issuer.legal" placeholder="EI — Auto-entrepreneur · RCS Paris · Capital 1 000 €"></label>
+          </div>
+          <p class="hint">Mémorisé dans ce navigateur pour tous vos documents.</p>
+        </details>
+
+        <details id="style-details">
+          <summary>Apparence</summary>
+          <div class="logo-row">
+            <div class="logo-thumb" id="logo-thumb" aria-hidden="true">Logo</div>
+            <div class="logo-actions">
+              <label class="btn small">Choisir un logo<input type="file" id="logo-input" accept="image/*" hidden></label>
+              <button type="button" class="btn ghost small" id="logo-clear">Retirer</button>
+              <span class="hint">PNG ou JPG, 1,5 Mo max.</span>
+            </div>
+          </div>
+          <div class="field-label">Couleur de votre marque</div>
+          <div class="swatches" id="swatches"></div>
+          <div class="field-label">Modèle</div>
+          <div class="segmented small" role="group" aria-label="Modèle">
+            <button type="button" data-template="clean">Épuré</button>
+            <button type="button" data-template="band">Bandeau couleur</button>
+          </div>
+        </details>
+
+        <details open>
+          <summary>Client</summary>
+          <div class="grid">
+            <label class="full">Choisir dans le carnet
+              <select id="client-pick"><option value="">— Nouveau client —</option></select>
+            </label>
+            <label class="full">Nom / société<input data-bind="client.name" placeholder="Client SARL"></label>
+            <label>E-mail<input data-bind="client.email" type="email"></label>
+            <label>Téléphone<input data-bind="client.phone"></label>
+            <label class="full">Adresse<textarea data-bind="client.address" rows="2"></textarea></label>
+            <label>SIRET / ICE<input data-bind="client.taxId"></label>
+            <label>N° TVA<input data-bind="client.vatNumber"></label>
+          </div>
+          <button type="button" class="btn ghost small" id="btn-save-client">Enregistrer dans le carnet</button>
+        </details>
+
+        <details open>
+          <summary>Document</summary>
+          <div class="grid">
+            <label>Numéro<input data-bind="number"></label>
+            <label>Devise
+              <select data-bind="currency">
+                <option value="EUR">Euro (€)</option>
+                <option value="MAD">Dirham (MAD)</option>
+                <option value="USD">Dollar (USD)</option>
+                <option value="CHF">Franc suisse (CHF)</option>
+                <option value="XOF">Franc CFA (XOF)</option>
+                <option value="GBP">Livre (GBP)</option>
+                <option value="CAD">Dollar canadien (CAD)</option>
+              </select>
+            </label>
+            <label class="full">Objet<input data-bind="subject" placeholder="Ex : Création du site vitrine"></label>
+            <label>Date<input data-bind="date" type="date"></label>
+            <label><span id="due-label">Valable jusqu'au</span><input data-bind="dueDate" type="date"></label>
+            <label>Délai de paiement
+              <select data-bind="terms" id="terms-select">
+                <option value="0">À réception</option>
+                <option value="15">15 jours</option>
+                <option value="30">30 jours</option>
+                <option value="45">45 jours</option>
+                <option value="60">60 jours</option>
+              </select>
+            </label>
+            <label>Moyen de paiement
+              <select data-bind="paymentMethod">
+                <option value="Virement bancaire">Virement bancaire</option>
+                <option value="Chèque">Chèque</option>
+                <option value="Carte bancaire">Carte bancaire</option>
+                <option value="Espèces">Espèces</option>
+                <option value="PayPal">PayPal</option>
+                <option value="Virement ou chèque">Virement ou chèque</option>
+              </select>
+            </label>
+            <label>Remise globale (%)<input data-bind="discount" type="number" min="0" max="100" step="0.01" placeholder="0"></label>
+            <label>Acompte versé<input data-bind="deposit" type="number" min="0" step="0.01" placeholder="0"></label>
+          </div>
+          <label class="check"><input type="checkbox" data-bind="vatExempt"> TVA non applicable (art. 293 B du CGI — micro-entreprise)</label>
+          <label class="check" id="legal-check"><input type="checkbox" data-bind="legalMentions"> Ajouter les mentions légales de paiement (France)</label>
+        </details>
+
+        <details open>
+          <summary>Prestations</summary>
+          <div id="lines"></div>
+          <datalist id="units">
+            <option value="unité"><option value="heure"><option value="jour"><option value="forfait">
+            <option value="mois"><option value="page"><option value="m²"><option value="kg"><option value="lot">
+          </datalist>
+          <div class="line-actions">
+            <button type="button" class="btn ghost small" id="btn-add-line">+ Ajouter une ligne</button>
+            <select id="catalog-pick" class="small-select" aria-label="Ajouter depuis le catalogue">
+              <option value="">+ Depuis le catalogue…</option>
+            </select>
+          </div>
+        </details>
+
+        <details open>
+          <summary>Notes &amp; conditions</summary>
+          <label class="full"><textarea data-bind="notes" rows="4"></textarea></label>
+        </details>
       </div>
 
-      <details open>
-        <summary>Votre entreprise</summary>
-        <div class="grid">
-          <label>Nom / raison sociale<input data-bind="issuer.name" placeholder="Mon Studio Web"></label>
-          <label>E-mail<input data-bind="issuer.email" type="email" placeholder="contact@exemple.com"></label>
-          <label>Téléphone<input data-bind="issuer.phone" placeholder="+33 6 00 00 00 00"></label>
-          <label>N° SIRET / ICE / NIF<input data-bind="issuer.taxId" placeholder="123 456 789 00010"></label>
-          <label class="full">Adresse<textarea data-bind="issuer.address" rows="2" placeholder="12 rue Exemple&#10;75000 Paris"></textarea></label>
-          <label class="full">IBAN (facultatif)<input data-bind="issuer.iban" placeholder="FR76 ..."></label>
-          <label class="full file">Logo
-            <input type="file" id="logo-input" accept="image/*">
-            <button type="button" class="btn ghost small" id="logo-clear">Retirer le logo</button>
-          </label>
-        </div>
-        <p class="hint">Vos infos d'entreprise sont mémorisées dans ce navigateur.</p>
-      </details>
-
-      <details open>
-        <summary>Client</summary>
-        <div class="grid">
-          <label>Nom<input data-bind="client.name" placeholder="Client SARL"></label>
-          <label>E-mail<input data-bind="client.email" type="email"></label>
-          <label class="full">Adresse<textarea data-bind="client.address" rows="2"></textarea></label>
-        </div>
-      </details>
-
-      <details open>
-        <summary>Document</summary>
-        <div class="grid">
-          <label>Numéro<input data-bind="number"></label>
-          <label>Devise
-            <select data-bind="currency">
-              <option value="EUR">Euro (€)</option>
-              <option value="MAD">Dirham (MAD)</option>
-              <option value="USD">Dollar (USD)</option>
-              <option value="CHF">Franc suisse (CHF)</option>
-              <option value="XOF">Franc CFA (XOF)</option>
-            </select>
-          </label>
-          <label>Date<input data-bind="date" type="date"></label>
-          <label><span id="due-label">Valable jusqu'au</span><input data-bind="dueDate" type="date"></label>
-          <label>Remise globale (%)<input data-bind="discount" type="number" min="0" max="100" step="0.01"></label>
-          <label>Acompte versé<input data-bind="deposit" type="number" min="0" step="0.01"></label>
-        </div>
-      </details>
-
-      <details open>
-        <summary>Prestations</summary>
-        <div id="lines"></div>
-        <button type="button" class="btn ghost" id="btn-add-line">+ Ajouter une ligne</button>
-      </details>
-
-      <details open>
-        <summary>Notes &amp; conditions</summary>
-        <label class="full"><textarea data-bind="notes" rows="4"></textarea></label>
-      </details>
-
-      <div class="io">
-        <button type="button" class="btn ghost small" id="btn-export">Exporter (JSON)</button>
-        <label class="btn ghost small">Importer (JSON)<input type="file" id="import-input" accept="application/json" hidden></label>
+      <div class="preview-wrap">
+        <article class="paper" id="paper"></article>
       </div>
     </section>
 
-    <!-- Aperçu -->
-    <section class="preview-wrap" aria-label="Aperçu">
-      <article class="paper" id="paper"></article>
+    <!-- ================= TABLEAU DE BORD ================= -->
+    <section class="view page no-print" id="view-dashboard" hidden>
+      <div class="page-head">
+        <div>
+          <h1>Tableau de bord</h1>
+          <p class="sub">Suivez vos devis, vos factures et vos paiements.</p>
+        </div>
+        <div class="page-actions">
+          <button type="button" class="btn" data-new="devis">+ Nouveau devis</button>
+          <button type="button" class="btn primary" data-new="facture">+ Nouvelle facture</button>
+        </div>
+      </div>
+
+      <div class="filters">
+        <label>Période
+          <select id="f-period">
+            <option value="year">Cette année</option>
+            <option value="12m">12 derniers mois</option>
+            <option value="all">Tout</option>
+          </select>
+        </label>
+        <label id="f-currency-wrap">Devise<select id="f-currency"></select></label>
+      </div>
+
+      <div class="kpis" id="kpis"></div>
+
+      <div class="card">
+        <div class="card-head">
+          <h2>Documents</h2>
+          <div class="filters inline">
+            <input type="search" id="f-search" placeholder="Rechercher un client, un numéro…" aria-label="Rechercher">
+            <select id="f-type" aria-label="Type">
+              <option value="">Tous les types</option>
+              <option value="devis">Devis</option>
+              <option value="facture">Factures</option>
+            </select>
+            <select id="f-status" aria-label="Statut">
+              <option value="">Tous les statuts</option>
+            </select>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="data" id="docs-table">
+            <thead>
+              <tr>
+                <th>N°</th><th>Client</th><th>Date</th><th>Échéance</th><th class="num">Montant TTC</th><th>Statut</th><th></th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+        <p class="empty-state" id="docs-empty" hidden>Aucun document pour l'instant. Créez votre premier devis !</p>
+      </div>
+
+      <div class="card backup">
+        <div>
+          <h2>Sauvegarde</h2>
+          <p class="sub">Vos données restent dans ce navigateur. Exportez-les régulièrement pour ne rien perdre, ou pour les transférer sur un autre appareil.</p>
+        </div>
+        <div class="page-actions">
+          <button type="button" class="btn" id="btn-backup">Exporter tout</button>
+          <label class="btn ghost">Importer<input type="file" id="restore-input" accept="application/json" hidden></label>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CLIENTS ================= -->
+    <section class="view page no-print" id="view-clients" hidden>
+      <div class="page-head">
+        <div>
+          <h1>Clients</h1>
+          <p class="sub">Votre carnet d'adresses, réutilisable en un clic dans l'éditeur.</p>
+        </div>
+      </div>
+      <div class="two-col">
+        <form class="card" id="client-form" autocomplete="off">
+          <h2 id="client-form-title">Nouveau client</h2>
+          <input type="hidden" name="id">
+          <div class="grid">
+            <label class="full">Nom / société *<input name="name" required></label>
+            <label>E-mail<input name="email" type="email"></label>
+            <label>Téléphone<input name="phone"></label>
+            <label class="full">Adresse<textarea name="address" rows="2"></textarea></label>
+            <label>SIRET / ICE<input name="taxId"></label>
+            <label>N° TVA<input name="vatNumber"></label>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn primary">Enregistrer</button>
+            <button type="reset" class="btn ghost">Annuler</button>
+          </div>
+        </form>
+        <div class="card">
+          <div class="card-head">
+            <h2>Carnet</h2>
+            <input type="search" id="client-search" placeholder="Rechercher…" aria-label="Rechercher un client">
+          </div>
+          <div id="client-list" class="list"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= CATALOGUE ================= -->
+    <section class="view page no-print" id="view-catalog" hidden>
+      <div class="page-head">
+        <div>
+          <h1>Catalogue</h1>
+          <p class="sub">Vos prestations habituelles, à ajouter à un devis en un clic.</p>
+        </div>
+      </div>
+      <div class="two-col">
+        <form class="card" id="item-form" autocomplete="off">
+          <h2 id="item-form-title">Nouvelle prestation</h2>
+          <input type="hidden" name="id">
+          <div class="grid">
+            <label class="full">Désignation *<textarea name="desc" rows="2" required></textarea></label>
+            <label>Unité<input name="unit" list="units" placeholder="forfait"></label>
+            <label>Prix HT<input name="price" type="number" step="0.01" min="0" required></label>
+            <label>TVA %<input name="vat" type="number" step="0.1" min="0" value="20"></label>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn primary">Enregistrer</button>
+            <button type="reset" class="btn ghost">Annuler</button>
+          </div>
+        </form>
+        <div class="card">
+          <div class="card-head">
+            <h2>Prestations</h2>
+            <input type="search" id="item-search" placeholder="Rechercher…" aria-label="Rechercher une prestation">
+          </div>
+          <div id="item-list" class="list"></div>
+        </div>
+      </div>
     </section>
   </main>
-
-  <!-- Historique -->
-  <dialog id="history">
-    <div class="dialog-head">
-      <h2>Historique</h2>
-      <button type="button" class="btn ghost small" id="history-close" aria-label="Fermer">✕</button>
-    </div>
-    <div id="history-list"></div>
-  </dialog>
 
   <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
